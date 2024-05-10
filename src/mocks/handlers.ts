@@ -1,5 +1,11 @@
 import { http, HttpResponse } from "msw";
-import { encodeEnvelope, encodeEnvelopes } from "@connectrpc/connect/protocol";
+import {
+  pipeTo,
+  sinkAll,
+  transformSplitEnvelope,
+  encodeEnvelope,
+  encodeEnvelopes,
+} from "@connectrpc/connect/protocol";
 import { trailerFlag } from "@connectrpc/connect/protocol-grpc-web";
 import {
   SayRequest,
@@ -12,8 +18,17 @@ const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 const shiftEnvelope = async (req: Request): Promise<Uint8Array> => {
-  const buffer = await req.arrayBuffer();
-  return new Uint8Array(buffer, 5, buffer.byteLength - 5);
+  async function* createIt() {
+    const ary = new Uint8Array(await req.arrayBuffer());
+    yield ary;
+  }
+
+  const messages = await pipeTo(
+    createIt(),
+    transformSplitEnvelope(0xffffffff),
+    sinkAll(),
+  );
+  return messages[0].data;
 };
 
 export const handlers = [
