@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createPromiseClient } from "@connectrpc/connect";
+import { useState, useRef } from "react";
+import { createPromiseClient, ConnectError, Code } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { ElizaService } from "./gen/proto/eliza_connect";
 import { SayRequest } from "./gen/proto/eliza_pb";
@@ -8,6 +8,7 @@ import "./App.css";
 function App() {
   const [sayRes, setSayRes] = useState<string>();
   const [introduceRes, setIntroduceRes] = useState<string[]>([]);
+  const cancelRef = useRef<AbortController | null>(null);
 
   const client = createPromiseClient(
     ElizaService,
@@ -20,9 +21,27 @@ function App() {
   };
 
   const onClickIntroduce = async () => {
-    for await (const res of client.introduce({ name: "foobar" })) {
-      setIntroduceRes((prev) => [res.sentence, ...prev]);
+    onClickAbort();
+    cancelRef.current = new AbortController();
+
+    try {
+      for await (const res of client.introduce(
+        { name: "foobar" },
+        { signal: cancelRef.current.signal },
+      )) {
+        setIntroduceRes((prev) => [res.sentence, ...prev]);
+      }
+    } catch (e) {
+      const err = ConnectError.from(e);
+      if (err.code === Code.Canceled) {
+        console.log("cancel stream");
+      }
     }
+  };
+
+  const onClickAbort = () => {
+    cancelRef.current?.abort();
+    setIntroduceRes([]);
   };
 
   return (
@@ -36,6 +55,9 @@ function App() {
       <div>
         <button type="button" onClick={onClickIntroduce}>
           Introduce
+        </button>
+        <button type="button" onClick={onClickAbort}>
+          Cancel
         </button>
         <div style={{ width: "400px", height: "100px", overflow: "auto" }}>
           {introduceRes.map((s, i) => (
