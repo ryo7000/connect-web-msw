@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createPromiseClient } from "@connectrpc/connect";
 import { createGrpcWebTransport } from "@connectrpc/connect-web";
 import { ElizaService } from "./gen/proto/eliza_connect";
+import { SayRequest } from "./gen/proto/eliza_pb";
 import "./App.css";
 
 function App() {
