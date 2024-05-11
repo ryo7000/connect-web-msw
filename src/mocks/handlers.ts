@@ -1,4 +1,4 @@
-import { http, HttpResponse } from "msw";
+import { http, HttpResponse, delay } from "msw";
 import {
   pipeTo,
   sinkAll,
@@ -13,9 +13,6 @@ import {
   IntroduceRequest,
   IntroduceResponse,
 } from "../gen/proto/eliza_pb";
-
-const sleep = async (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
 
 const shiftEnvelope = async (req: Request): Promise<Uint8Array> => {
   async function* createIt() {
@@ -64,7 +61,7 @@ export const handlers = [
               sentence: `${req.name} hello ${Date.now()}`,
             });
             controller.enqueue(encodeEnvelope(0, res.toBinary()));
-            await sleep(1000);
+            await delay(1000);
           }
           controller.enqueue(encodeEnvelope(trailerFlag, new Uint8Array(0)));
           controller.close();
