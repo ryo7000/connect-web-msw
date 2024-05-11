@@ -27,6 +27,9 @@ service ElizaService {
   rpc Say(SayRequest) returns (SayResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
+  rpc SayMock(SayRequest) returns (SayResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
   // Converse is a bidirectional RPC. The caller may exchange multiple
   // back-and-forth messages with Eliza over a long-lived connection. Eliza
   // responds to each ConverseRequest with a ConverseResponse.
@@ -34,6 +37,7 @@ service ElizaService {
   // Introduce is a server streaming RPC. Given the caller's name, Eliza
   // returns a stream of sentences to introduce itself.
   rpc Introduce(IntroduceRequest) returns (stream IntroduceResponse) {}
+  rpc IntroduceMock(IntroduceRequest) returns (stream IntroduceResponse) {}
 }
 
 // SayRequest is a single-sentence request.

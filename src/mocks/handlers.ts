@@ -33,7 +33,7 @@ const shiftEnvelope = async (req: Request): Promise<Uint8Array> => {
 
 export const handlers = [
   http.post(
-    "http://localhost:50051/connectrpc.eliza.v1.ElizaService/Say",
+    "http://localhost:8080/connectrpc.eliza.v1.ElizaService/SayMock",
     async ({ request }) => {
       const req = SayRequest.fromBinary(await shiftEnvelope(request));
 
@@ -53,14 +53,13 @@ export const handlers = [
     },
   ),
   http.post(
-    "http://localhost:50051/connectrpc.eliza.v1.ElizaService/Introduce",
+    "http://localhost:8080/connectrpc.eliza.v1.ElizaService/IntroduceMock",
     async ({ request }) => {
       const req = IntroduceRequest.fromBinary(await shiftEnvelope(request));
 
-      let abort = false;
       const stream = new ReadableStream({
         start: async (controller) => {
-          while (!abort) {
+          while (!request.signal.aborted) {
             const res = new IntroduceResponse({
               sentence: `${req.name} hello ${Date.now()}`,
             });
@@ -70,10 +69,6 @@ export const handlers = [
           controller.enqueue(encodeEnvelope(trailerFlag, new Uint8Array(0)));
           controller.close();
         },
-      });
-
-      request.signal.addEventListener("abort", () => {
-        abort = true;
       });
 
       return new HttpResponse(stream, {

@@ -1,0 +1,23 @@
+version: '3'
+services:
+  envoy:
+    image: envoyproxy/envoy:v1.30-latest
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    ports:
+      - "8080:8080"
+    command: envoy -c /etc/envoy/envoy.yaml -l debug
+
+  grpc:
+    image: node:20-alpine
+    volumes:
+      - ./package.json:/home/node/package.json
+      - ./tsconfig.json:/home/node/tsconfig.json
+      - ./tsconfig.node.json:/home/node/tsconfig.node.json
+      - ./src/server.ts:/home/node/src/server.ts
+      - ./src/gen:/home/node/src/gen
+    working_dir: /home/node
+    user: "1000:1000"
+    command: /bin/sh -c "yarn && yarn run tsx ./src/server.ts"
+    ports:
+      - "50051:50051"

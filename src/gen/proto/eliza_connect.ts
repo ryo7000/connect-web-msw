@@ -46,6 +46,16 @@ export const ElizaService = {
       idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
+     * @generated from rpc connectrpc.eliza.v1.ElizaService.SayMock
+     */
+    sayMock: {
+      name: "SayMock",
+      I: SayRequest,
+      O: SayResponse,
+      kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
+    },
+    /**
      * Converse is a bidirectional RPC. The caller may exchange multiple
      * back-and-forth messages with Eliza over a long-lived connection. Eliza
      * responds to each ConverseRequest with a ConverseResponse.
@@ -66,6 +76,15 @@ export const ElizaService = {
      */
     introduce: {
       name: "Introduce",
+      I: IntroduceRequest,
+      O: IntroduceResponse,
+      kind: MethodKind.ServerStreaming,
+    },
+    /**
+     * @generated from rpc connectrpc.eliza.v1.ElizaService.IntroduceMock
+     */
+    introduceMock: {
+      name: "IntroduceMock",
       I: IntroduceRequest,
       O: IntroduceResponse,
       kind: MethodKind.ServerStreaming,
